@@ -5,11 +5,23 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  
 </head>
 <body>
   <div id="app">
     <v-app>
       <v-main>
+
+        <v-container>
+          <v-row>
+            <v-btn class="ma-2" :key="filterName" :color="filters[filterName] ? 'primary' : 'disabled'" v-for="filterName in Object.keys(filters)" @click="toggleFilter(filterName)">
+              {{ filterName }}
+              <v-icon right dark>
+                {{ filters[filterName] ? 'mdi-eye' : 'mdi-eye-off' }}
+              </v-icon>
+            </v-btn>
+          </v-row>
+        </v-container>
 
         <v-container>
 
@@ -44,19 +56,27 @@
       </v-main>
     </v-app>
   </div>
-
+  
+  <script src="db.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-  <script src="db.js"></script>
   <script>
     new Vue({
       el: '#app',
       vuetify: new Vuetify(),
-      methods: {
+      created: function() {
+        this.refreshItems();
+      }, 
+      methods: {    
         populateItems: function(zone) {
           let items = [];
 
           for (let sectionName in db.items) {
+
+            if (this.filters !== undefined && !this.filters[sectionName]) {
+              continue;
+            }
+
             let sectionItems = db.items[sectionName];
             for (let i = 0; i < sectionItems.length; ++i) {
               let item = sectionItems[i];
@@ -85,28 +105,9 @@
 
           zone.items = items;
         },
-        updateCheckbox: function(key, zone, value) {
-          if (value === true) {
-              localStorage.setItem(key, value);
-              ++zone.totalItemsSet; 
-          } else {
-              localStorage.removeItem(key);
-              --zone.totalItemsSet; 
-          }
-        }
-      },
-      data() {
-        let items = {
-          zones: [],
-          saved: {}
-        };
-        let keys = Object.keys(localStorage);
-        i = keys.length;
-        while ( i-- ) {
-          items.saved[keys[i]] = localStorage.getItem(keys[i]);
-        }
-
-        for (let i = 0; i < db.zones.length; ++i) {
+        refreshItems: function() {
+          let zones = [];
+          for (let i = 0; i < db.zones.length; ++i) {
             let dbzone = db.zones[i];
             let zone = {
               name: dbzone.name,
@@ -130,7 +131,40 @@
             }
 
             this.populateItems(zone);
-            items.zones.push(zone);
+            zones.push(zone);        
+          }
+
+          this.zones = zones;
+        },     
+        toggleFilter: function(filterName) {
+          this.filters[filterName] = !this.filters[filterName];
+          this.refreshItems();
+        },
+        updateCheckbox: function(key, zone, value) {
+          if (value === true) {
+              localStorage.setItem(key, value);
+              ++zone.totalItemsSet; 
+          } else {
+              localStorage.removeItem(key);
+              --zone.totalItemsSet; 
+          }
+        }
+      },
+      data() {
+        let items = {
+          zones: [],
+          saved: {},
+          filters: {}
+        };
+
+        for (let sectionName in db.items) {
+          items.filters[sectionName] = true;
+        }
+
+        let keys = Object.keys(localStorage);
+        i = keys.length;
+        while ( i-- ) {
+          items.saved[keys[i]] = localStorage.getItem(keys[i]);
         }
 
         return items;
