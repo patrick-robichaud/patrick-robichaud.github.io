@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>
+
+        <v-container>
+
+            <v-row v-for="zone in zones" :key="zone.name">
+                <v-col>
+                    <v-card class="rounded-0 blue lighten-4 elevation-4 py-2" style="padding: 0,0,100,0;">
+                    {{ zone.name }} ( {{ zone.totalItemsSet }} / {{ zone.totalItems }} )
+                    </v-card>
+
+                    <v-container>
+                        <v-checkbox v-for="item in zone.items" :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, zone, $event)"></v-checkbox>                
+                    </v-container>
+
+                    <v-container>
+                        <v-row v-for="subzone in zone.subzones" :key="subzone.name">
+                            <v-col>
+                                {{ subzone.name }} ( {{ subzone.totalItemsSet }} / {{ subzone.totalItems }} )
+
+                                <v-container>
+                                    <v-checkbox v-for="item in subzone.items" :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, subzone, $event)"></v-checkbox>                
+                                </v-container>
+
+                            </v-col>
+                        </v-row>
+                    </v-container>
+
+                </v-col>
+
+            </v-row>
+
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="db.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      methods: {
+        populateItems: function(zone) {
+          let items = [];
+
+          for (let sectionName in db.items) {
+            let sectionItems = db.items[sectionName];
+            for (let i = 0; i < sectionItems.length; ++i) {
+              let item = sectionItems[i];
+              if (item.location !== zone.name) {
+                continue;
+              }
+
+              items.push({
+                name: item.name,
+                location: item.location,
+                type: sectionName,
+                hint: item.where
+              });
+
+              ++zone.totalItems;
+              let value = localStorage.getItem(item.name + item.location)
+              if (value) {
+                  ++zone.totalItemsSet;
+              }
+            }          
+          }
+
+          items.sort(function(itemA, itemB) {
+            return itemA.name.localeCompare(itemB.name);
+          });
+
+          zone.items = items;
+        },
+        updateCheckbox: function(key, zone, value) {
+          if (value === true) {
+              localStorage.setItem(key, value);
+              ++zone.totalItemsSet; 
+          } else {
+              localStorage.removeItem(key);
+              --zone.totalItemsSet; 
+          }
+        }
+      },
+      data() {
+        let items = {
+          zones: [],
+          saved: {}
+        };
+        let keys = Object.keys(localStorage);
+        i = keys.length;
+        while ( i-- ) {
+          items.saved[keys[i]] = localStorage.getItem(keys[i]);
+        }
+
+        for (let i = 0; i < db.zones.length; ++i) {
+            let dbzone = db.zones[i];
+            let zone = {
+              name: dbzone.name,
+              totalItems: 0,
+              totalItemsSet: 0,
+              subzones: [],
+              items: []
+            };
+
+            for (let j = 0; j < dbzone.subzones.length; ++j) {
+                let subzoneName = dbzone.subzones[j];
+
+                let subzone = {
+                  name: subzoneName,
+                  totalItems: 0,
+                  totalItemsSet: 0,
+                  items: []
+                };
+                this.populateItems(subzone);
+                zone.subzones.push(subzone);
+            }
+
+            this.populateItems(zone);
+            items.zones.push(zone);
+        }
+
+        return items;
+      }
+      
+    })
+  </script>
+</body>
+</html>
