@@ -3,6 +3,7 @@ let db = {
     zones: [
         {
             name: "Altus Plateau",
+            background: "altusplateau.jpg",
             subzones: [
                 "Altus Tunnel",
                 "Auriza Hero's Grave",
@@ -29,6 +30,7 @@ let db = {
         },
         {
             name: "Caelid",
+            background: "caelid.jpg",
             subzones: [
                 "Abandoned Cave",
                 "Caelem Ruins",
@@ -97,6 +99,7 @@ let db = {
         },
         {
             name: "Limgrave",
+            background: "limgrave.jpg",
             subzones: [
                 "Bridge of Sacrifice",
                 "Church of Dragon Communion",
@@ -133,6 +136,7 @@ let db = {
         },
         {
             name: "Liurnia of the Lakes",
+            background: "liurnia.jpg",
             subzones: [
                 "Academy Crystal Cave",
                 "Academy Gate Town",
@@ -395,7 +399,7 @@ let db = {
             {name: "Glintstone Dragon Smarag", where: "A fearsome magic dragon with crystalized magic formation for scales. Guards the Academy Glintstone Key.", location: "Liurnia of the Lakes", gatherType: "kill"},            
             {name: "Godefroy The Grafted", where: "Optional Boss. Imprisoned within the Golden Lineage Evergaol. Drops the Godfrey Icon upon defeat.", location: "Golden Lineage Evergaol", gatherType: "kill"},
             {name: "Godfrey, First Elden Lord (Golden Shade)", where: "This is a spectral shade of Godfrey that is encountered in Leyndell, Royal Capital. Drops a Talisman Pouch.", location: "Leyndell, Royal Capital", gatherType: "kill"},
-            {name: "Godrick The Grafted", where: "The Lord of Stormveil and the first Demigod encountered. Drops Godrick's Great Rune and Remembrance of the Grafted upon defeat.", location: "Stormveil Castle", gatherType: "kill"},
+            {name: "Godrick The Grafted", where: "The Lord of Stormveil and the first Demigod encountered. Drops Godrick's Great Rune and Remembrance of the Grafted upon defeat.", location: "Stormveil Castle", gatherType: "kill", hintImage: "00-0001"},
             {name: "Godskin Apostle (Altus Plateau)", where: "Can be found at Windmill Heights. Drops Godskin Peeler and Scouring Black Flame.", location: "Altus Plateau", gatherType: "kill"},
             {name: "Godskin Apostle (Divine Tower of Caelid)", where: "Great Enemy. Found at the basement of the Divine Tower of Caelid (See page for how to reach). Drops the Godskin Apostle Set upon defeat.", location: "Divine Tower of Caelid", gatherType: "kill"},
             {name: "Godskin Noble (Divine Tower Of Liurnia)", where: "Field boss guarding the bridge to the Divine Tower of Liurnia. Only accessible after progressing Ranni's questline and acquiring the Carian Inverted Statue, allowing access to a secret area in Carian Study Hall leading to the bridge.", location: "Divine Tower of Liurnia", gatherType: "kill"},

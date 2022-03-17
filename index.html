@@ -5,10 +5,14 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-  
+  <style> 
+    [v-cloak] {
+        display:none;
+      }
+  </style>
 </head>
 <body>
-  <div id="app">
+  <div v-cloak id="app">
     <v-app>
       <v-main>
 
@@ -26,30 +30,40 @@
         <v-container>
 
             <v-row v-for="zone in zones" :key="zone.name">
-                <v-col>
-                    <v-card class="rounded-0 blue lighten-4 elevation-4 py-2" style="padding: 0,0,100,0;">
-                    {{ zone.name }} ( {{ zone.totalItemsSet }} / {{ zone.totalItems }} )
+              <v-col>
+                <v-card :img="zone.background !== undefined ? './backgrounds/' + zone.background : ''" class="rounded-0 blue lighten-4 elevation-2 py-2" style="padding: 0,0,100,0;">
+                  <h3 class="white--text pl-2">{{ zone.name }} ( {{ zone.totalItemsSet }} / {{ zone.totalItems }} )</h3>
+                </v-card>
+              </v-col>
+
+              <v-container>
+                <v-row v-for="item in zone.items">
+                  <v-col class="ma-0 pa-0 pl-4">
+                    <v-checkbox  :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, zone, $event)"></v-checkbox>                  
+                  </v-col>
+                  <v-col class="ma-0 pa-0 pl-4">
+                    <v-icon v-if="item.hintImage !== undefined" class="ma-4" @click="showImage">mdi-camera</v-icon>
+                  </v-col>
+                </v-row>        
+              
+                <v-row v-for="subzone in zone.subzones" :key="subzone.name">
+                  <v-col lg="12">
+                    <v-card class="rounded-0 blue lighten-5 elevation-2 py-2 mt-4">
+                      <h5 class="pl-2">{{ subzone.name }} ( {{ subzone.totalItemsSet }} / {{ subzone.totalItems }} )</h5>
                     </v-card>
-
-                    <v-container>
-                        <v-checkbox v-for="item in zone.items" :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, zone, $event)"></v-checkbox>                
-                    </v-container>
-
-                    <v-container>
-                        <v-row v-for="subzone in zone.subzones" :key="subzone.name">
-                            <v-col>
-                                {{ subzone.name }} ( {{ subzone.totalItemsSet }} / {{ subzone.totalItems }} )
-
-                                <v-container>
-                                    <v-checkbox v-for="item in subzone.items" :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, subzone, $event)"></v-checkbox>                
-                                </v-container>
-
-                            </v-col>
-                        </v-row>
-                    </v-container>
-
-                </v-col>
-
+                  </v-col>
+                  <v-container>                          
+                    <v-row v-for="item in subzone.items">
+                      <v-col class="ma-0 pa-0 pl-4">
+                        <v-checkbox  :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, subzone, $event)"></v-checkbox>                  
+                      </v-col>
+                      <v-col class="ma-0 pa-0">
+                        <v-icon v-if="item.hintImage !== undefined" class="ma-4" @click="showImage">mdi-camera</v-icon>
+                      </v-col>
+                    </v-row>  
+                  </v-container>
+                </v-row>
+              </v-container>
             </v-row>
 
         </v-container>
@@ -88,7 +102,8 @@
                 name: item.name,
                 location: item.location,
                 type: sectionName,
-                hint: item.where
+                hint: item.where,
+                hintImage: item.hintImage
               });
 
               ++zone.totalItems;
@@ -111,6 +126,7 @@
             let dbzone = db.zones[i];
             let zone = {
               name: dbzone.name,
+              background: dbzone.background,
               totalItems: 0,
               totalItemsSet: 0,
               subzones: [],
@@ -121,7 +137,7 @@
                 let subzoneName = dbzone.subzones[j];
 
                 let subzone = {
-                  name: subzoneName,
+                  name: subzoneName,                  
                   totalItems: 0,
                   totalItemsSet: 0,
                   items: []
@@ -135,7 +151,10 @@
           }
 
           this.zones = zones;
-        },     
+        },
+        showImage: function() {
+
+        },
         toggleFilter: function(filterName) {
           this.filters[filterName] = !this.filters[filterName];
           this.refreshItems();
