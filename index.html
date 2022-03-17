@@ -31,7 +31,7 @@
 
             <v-row v-for="zone in zones" :key="zone.name">
               <v-col>
-                <v-card :img="zone.background !== undefined ? '~./backgrounds/' + zone.background : ''" class="rounded-0 blue lighten-4 elevation-2 py-2" style="padding: 0,0,100,0;">
+                <v-card :img="zone.background !== undefined ? 'backgrounds/' + zone.background : ''" class="rounded-0 blue lighten-4 elevation-2 py-2" style="padding: 0,0,100,0;">
                   <h3 class="white--text pl-2">{{ zone.name }} ( {{ zone.totalItemsSet }} / {{ zone.totalItems }} )</h3>
                 </v-card>
               </v-col>
