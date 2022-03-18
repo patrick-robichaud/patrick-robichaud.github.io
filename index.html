@@ -5,7 +5,7 @@
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-  <style> 
+  <style>    
     [v-cloak] {
         display:none;
       }
@@ -18,15 +18,14 @@
 
         <v-container>
           <v-row>
-            <v-btn class="ma-2" :key="filterName" :color="filters[filterName] ? 'primary' : 'disabled'" v-for="filterName in Object.keys(filters)" @click="toggleFilter(filterName)">
-              {{ filterName }}
+            <v-btn class="ma-2" :key="filterName" :color="filters[filterName].visible ? filters[filterName].color : 'disabled'" v-for="filterName in Object.keys(filters)" @click="toggleFilter(filterName)">
+              {{ filterName }} (0/{{ filters[filterName].totalItems }})
               <v-icon right dark>
-                {{ filters[filterName] ? 'mdi-eye' : 'mdi-eye-off' }}
+                {{ filters[filterName].visible ? 'mdi-eye' : 'mdi-eye-off' }}
               </v-icon>
             </v-btn>
           </v-row>
         </v-container>
-
         <v-container>
 
             <v-row v-for="zone in zones" :key="zone.name">
@@ -37,25 +36,25 @@
               </v-col>
 
               <v-container>
-                <v-row v-for="item in zone.items">
-                  <v-col class="ma-0 pa-0 pl-4">
-                    <v-checkbox  :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, zone, $event)"></v-checkbox>                  
+                <v-row :key="item.name + item.location" class="ml-0 pa-0 pb-3" v-for="item in zone.items" :style="'background:linear-gradient(90deg, ' + filters[item.type].color + ', rgba(255, 255, 255, 1) 2px);'">
+                  <v-col md="9" class="ma-0 pa-0 ml-2">
+                    <v-checkbox :messages="item.hint"  v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, zone, $event)"></v-checkbox>                  
                   </v-col>
-                  <v-col class="ma-0 pa-0 pl-4">
+                  <v-col class="ma-0 pa-0">
                     <v-icon v-if="item.hintImage !== undefined" class="ma-4" @click="showImage">mdi-camera</v-icon>
                   </v-col>
                 </v-row>        
               
                 <v-row v-for="subzone in zone.subzones" :key="subzone.name">
-                  <v-col lg="12">
+                  <v-col md="9" lg="12">
                     <v-card class="rounded-0 blue lighten-5 elevation-2 py-2 mt-4">
                       <h5 class="pl-2">{{ subzone.name }} ( {{ subzone.totalItemsSet }} / {{ subzone.totalItems }} )</h5>
                     </v-card>
                   </v-col>
                   <v-container>                          
-                    <v-row v-for="item in subzone.items">
-                      <v-col class="ma-0 pa-0 pl-4">
-                        <v-checkbox  :messages="item.hint" :key="item.name + item.location" v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, subzone, $event)"></v-checkbox>                  
+                    <v-row :key="item.name + item.location" class="ml-0 pa-0 pb-3" v-for="item in subzone.items" :style="'background:linear-gradient(90deg, ' + filters[item.type].color + ', rgba(255, 255, 255, 1) 2px);'">
+                      <v-col md="9" class="ma-0 pa-0 ml-2">
+                        <v-checkbox  :messages="item.hint"  v-model="saved[item.name + item.location]" :label="item.name + ' (' + item.type + ')'" @change="updateCheckbox(item.name + item.location, subzone, $event)"></v-checkbox>                  
                       </v-col>
                       <v-col class="ma-0 pa-0">
                         <v-icon v-if="item.hintImage !== undefined" class="ma-4" @click="showImage">mdi-camera</v-icon>
@@ -85,13 +84,13 @@
         populateItems: function(zone) {
           let items = [];
 
-          for (let sectionName in db.items) {
+          for (let sectionName in db.categories) {
 
-            if (this.filters !== undefined && !this.filters[sectionName]) {
+            if (this.filters !== undefined && !this.filters[sectionName].visible) {
               continue;
             }
 
-            let sectionItems = db.items[sectionName];
+            let sectionItems = db.categories[sectionName].items;
             for (let i = 0; i < sectionItems.length; ++i) {
               let item = sectionItems[i];
               if (item.location !== zone.name) {
@@ -156,7 +155,7 @@
 
         },
         toggleFilter: function(filterName) {
-          this.filters[filterName] = !this.filters[filterName];
+          this.filters[filterName].visible = !this.filters[filterName].visible;
           this.refreshItems();
         },
         updateCheckbox: function(key, zone, value) {
@@ -176,8 +175,12 @@
           filters: {}
         };
 
-        for (let sectionName in db.items) {
-          items.filters[sectionName] = true;
+        for (let sectionName in db.categories) {
+          items.filters[sectionName] = {
+            color: db.categories[sectionName].categoryColor,
+            totalItems: db.categories[sectionName].items.length,
+            visible: true
+          };
         }
 
         let keys = Object.keys(localStorage);
